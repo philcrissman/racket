@@ -8,6 +8,18 @@
   (lambda (x)
     (and (not (pair? x)) (not (null? x)))))
 
+(atom? 'atom)
+(atom? 'turkey)
+(atom? 1492)
+
+(list? '(atom))
+(list? '(atom turkey or))
+(list? '((atom turkey) or))
+
+; both lists and atoms are S-expressions
+
+(not (atom? '()))
+
 ; car
 ; car gives you the first element of a list
 ; you can't ask for the car of an empty list!
@@ -16,7 +28,9 @@
 ; the car of '(a b) is 'a
 (eq? 'a (car '(a b)))
 
-; the cdr 
+; the cdr of '(a b) is '(b)
+; eq? does not work here! Why?
+(eq? '(b) (cdr '(a b)))
 
 
 
