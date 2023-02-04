@@ -114,6 +114,9 @@
 (check-pred lat? '(a b c))
 (check-false (lat? '((a) b c)))
 
+; The First Commandment
+;   Always ask null? as the first question in expressing any function
+
 ; Aside: how would we write flatten? (takes a (possibly nested)  list and returns a lat)
 ; Let's try
 (define flatten
@@ -163,6 +166,10 @@
 
 ; It seems to work! Am I missing a test case?
 ; Time to get a snack. And go back to the book.
+; Q: the first commandment says "Always ask null? as the first question"
+;   but flatten _does not_! Why?
+; A: the first question that flatten asks is lat? and lat? _does_ ask null? as its
+;   first question. So flatten is asking null? when it asks lat?
 
 
 (define member?
@@ -175,3 +182,116 @@
 (check-false (member? 'a '(1 2 3 4 5)))
 
 ; Chapter 3 - Cons the Magnificent
+
+; rember removes a member from a list
+
+; The first implementation of rember:
+(define rember1
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      (else (cond
+              ((eq? (car lat) a) (cdr lat))
+              (else (rember1 a (cdr lat))))))))
+
+; This works!
+(check-equal?
+ '(lettuce and tomato)
+ (rember1 'bacon '(bacon lettuce and tomato)))
+
+; Notice we are checking this is *not* equal; and it isn't. But it _should_ be!
+(check-not-equal?
+ '(bacon lettuce tomato)
+ (rember1 'and '(bacon lettuce and tomato)))
+
+(check-equal?
+ '(tomato)
+ (rember1 'and '(bacon lettuce and tomato)))
+; That passes; but '(tomato) is not the right answer!
+
+; The Second Commandment
+; Use cons to build lists
+
+(define rember
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      (else (cond
+              ((eq? (car lat) a) (cdr lat))
+              (else (cons (car lat)
+                          (rember a (cdr lat)))))))))
+
+; This works!
+(check-equal?
+ '(lettuce and tomato)
+ (rember 'bacon '(bacon lettuce and tomato)))
+
+(check-equal?
+ '(bacon lettuce tomato)
+ (rember 'and '(bacon lettuce and tomato)))
+; Yay, this works, now!
+; When we didn't use cons we did remove the first instance of the desired element, but
+;   we did not keep the first element... they were lost. So we needed to cons each of them on
+;   before recurring.
+
+; rember, but simpler. We can simplfy rember so it doesn't use two cond expressions
+(define rember-simpler
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) a) (cdr lat))
+      (else (cons (car lat)
+                  (rember-simpler a (cdr lat)))))))
+
+; These two should still pass:
+(check-equal?
+ '(lettuce and tomato)
+ (rember-simpler 'bacon '(bacon lettuce and tomato)))
+
+(check-equal?
+ '(bacon lettuce tomato)
+ (rember-simpler 'and '(bacon lettuce and tomato)))
+
+; rember only removes the _first_ instance of a
+(check-equal?
+ '(again again and again and again)
+ (rember-simpler 'and '(again and again and again and again)))
+
+; Just for fun, let's make a rember that removes all matches
+(define rember-all
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) a) (rember-all a (cdr lat)))
+      (else (cons (car lat) (rember-all a (cdr lat)))))))
+
+; These checks should still pass for rember-all:
+(check-equal?
+ '(lettuce and tomato)
+ (rember-all 'bacon '(bacon lettuce and tomato)))
+
+(check-equal?
+ '(bacon lettuce tomato)
+ (rember-all 'and '(bacon lettuce and tomato)))
+
+; rember-all now removes all matches for a
+(check-equal?
+ '(again again again again)
+ (rember-all 'and '(again and again and again and again)))
+
+; firsts takes a list of lists and returns the first element of each in a list
+; or takes an empty list and returns that.
+
+(define firsts
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      (else (cons (car (car l)) (firsts (cdr l)))))))
+
+(check-equal?
+ (firsts '((1 2 3 4) (2 3 4 5) (3 4 5 6) (4 5 6 7)))
+ '(1 2 3 4))
+
+; The Third Commandment
+; When building a list, describe the first typical element and cons it onto the
+; natural recursion
