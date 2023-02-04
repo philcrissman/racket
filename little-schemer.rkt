@@ -119,8 +119,8 @@
 (define flatten
   (lambda (l)
     (cond
-      ((null? l) '())
       ; if list is a lat, it's already flat. Return it.
+      ; note: null list is a lat, so we don't need to check for it separately!
       ((lat? l) l)
       ; if first element is an empty list, discard it
       ((null? (car l)) (flatten (cdr l)))
