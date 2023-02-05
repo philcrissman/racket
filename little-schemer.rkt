@@ -295,3 +295,46 @@
 ; The Third Commandment
 ; When building a list, describe the first typical element and cons it onto the
 ; natural recursion
+
+; insertR should insert a new element to the right of the element specified
+; in a lat
+(define insertR
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons (car lat) (cons new (cdr lat))))
+      (else (cons (car lat) (insertR new old (cdr lat)))))))
+
+(check-equal?
+ (insertR 'topping 'fudge '(ice cream with fudge for dessert))
+ '(ice cream with fudge topping for dessert))
+
+(check-equal?
+ (insertR 'jalapeno 'and '(tacos tamales and salsa))
+ '(tacos tamales and jalapeno salsa))
+
+(define insertL
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons new lat))
+      (else (cons (car lat) (insertL new old (cdr lat)))))))
+
+(check-equal?
+ (insertL 'there 'world '(hello world))
+ '(hello there world))
+
+(check-equal?
+ (insertL 4 5 '(1 2 3 5 6))
+ '(1 2 3 4 5 6))
+
+(define subst
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons new (cdr lat)))
+      (else (cons (car lat) (subst new old (cdr lat)))))))
+
+(check-equal?
+ (subst 'Sam 'world '(hello world))
+ '(hello Sam))
