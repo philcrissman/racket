@@ -338,3 +338,20 @@
 (check-equal?
  (subst 'Sam 'world '(hello world))
  '(hello Sam))
+
+; subst2 looks like:
+; (subst2 new o1 o2 lat)
+; and replaces _either_ the first instance of o1 or o2 with new
+; ie it will only replace o2 if it doesn't find o1
+
+(define subst2
+  (lambda (new o1 o2 lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) o1) (cons new (cdr lat)))
+      ((eq? (car lat) o2) (cons new (cdr lat)))
+      (else (cons (car lat) (subst2 new o1 o2 (cdr lat)))))))
+
+(check-equal?
+ (subst2 'vanilla 'chocolate 'banana '(banana ice cream with chocolate topping))
+ '(vanilla ice cream with chocolate topping))
