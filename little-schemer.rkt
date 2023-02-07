@@ -355,3 +355,14 @@
 (check-equal?
  (subst2 'vanilla 'chocolate 'banana '(banana ice cream with chocolate topping))
  '(vanilla ice cream with chocolate topping))
+
+(define multirember
+  (lambda (a lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) a) (multirember a (cdr lat)))
+      (else (cons (car lat) (multirember a (cdr lat)))))))
+
+(check-equal?
+  (multirember 'cup '(coffee cup tea cup and hick cup))
+  '(coffee tea and hick))
