@@ -366,3 +366,15 @@
 (check-equal?
   (multirember 'cup '(coffee cup tea cup and hick cup))
   '(coffee tea and hick))
+
+; multiinsertR should insert new to the right of every instance of old
+(define multiinsertR
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons (car lat) (cons new (multiinsertR new old (cdr lat)))))
+      (else (cons (car lat) (multiinsertR new old (cdr lat)))))))
+
+(check-equal?
+  (multiinsertR 'ho 'hey '(hey hey hey))
+  '(hey ho hey ho hey ho))
