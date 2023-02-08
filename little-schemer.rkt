@@ -378,3 +378,15 @@
 (check-equal?
   (multiinsertR 'ho 'hey '(hey hey hey))
   '(hey ho hey ho hey ho))
+
+; multiinsertL coming up next
+(define multiinsertL
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons new (cons old (multiinsertL new old (cdr lat)))))
+      (else (cons (car lat) (multiinsertL new old (cdr lat)))))))
+
+(check-equal?
+ (multiinsertL 'hey 'ho '(ho ho ho))
+ '(hey ho hey ho hey ho))
