@@ -390,3 +390,16 @@
 (check-equal?
  (multiinsertL 'hey 'ho '(ho ho ho))
  '(hey ho hey ho hey ho))
+
+(define multisubst
+  (lambda (new old lat)
+    (cond
+      ((null? lat) '())
+      ((eq? (car lat) old) (cons new (multisubst new old (cdr lat))))
+      (else (cons (car lat) (multisubst new old (cdr lat)))))))
+
+(check-equal?
+ (multisubst 'Goodbye 'Hello '(Hello Hello Hello))
+ '(Goodbye Goodbye Goodbye))
+
+
