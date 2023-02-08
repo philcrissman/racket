@@ -402,4 +402,29 @@
  (multisubst 'Goodbye 'Hello '(Hello Hello Hello))
  '(Goodbye Goodbye Goodbye))
 
+; The Fourth Commandment
+; Always change at least one argument when recurring
+; Always change close to termination. The changin argument must be the one tested in the termination 
+; condition; when using cdr, test with null?
 
+; Chapter Four - Numbers Games
+
+(check-pred atom? 14)
+
+(check-eq?
+  (add1 67)
+  68)
+
+(check-eq?
+  (sub1 5)
+  4)
+
+(define o+
+  (lambda (n m)
+    (cond
+      ((zero? m) n)
+      (else (add1 (o+ n (sub1 m)))))))
+
+(check-eq?
+  (o+ 46 12)
+  58)
