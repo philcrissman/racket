@@ -466,3 +466,13 @@
 (check-eq?
   (ox 6 7)
   48)
+
+(define tup+
+  (lambda (tup1 tup2)
+    (cond
+      ((null? tup1) '())
+      (else (cons (o+ (car tup1) (car tup2)) (tup+ (cdr tup1) (cdr tup2)))))))
+
+(check-equal?
+  (tup+ '(1 2 3 4 5) '(5 4 3 2 1))
+  '(6 6 6 6 6))
