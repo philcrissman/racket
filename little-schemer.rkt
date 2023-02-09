@@ -428,3 +428,41 @@
 (check-eq?
   (o+ 46 12)
   58)
+
+(define o-
+  (lambda (n m)
+    (cond
+      ((zero? m) n)
+      (else (sub1 (o- n (sub1 m)))))))
+
+(check-eq?
+  (o- 14 6)
+  8)
+
+(check-eq?
+  (o- 45 3)
+  42)
+
+(define addtup
+  (lambda (tup)
+    (cond
+      ((null? tup) 0)
+      (else (o+ (car tup) (addtup (cdr tup)))))))
+
+(check-eq?
+  (addtup '(1 2 3 4 5))
+  15)
+
+; The First Commandment (revised)
+; When recurring on a list of atoms (lat), ask 2 questions: null? and else
+; When recurring on a number, ask 2 questions: zero? and else
+
+(define ox
+  (lambda (n m)
+    (cond
+      ((zero? m) n)
+      (else (o+ n (ox n (sub1 m)))))))
+
+(check-eq?
+  (ox 6 7)
+  48)
