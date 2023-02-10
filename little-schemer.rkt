@@ -489,10 +489,41 @@
 (define o>
   (lambda (n m)
     (cond
-      ((zero? m) #t)
       ((zero? n) #f)
+      ((zero? m) #t)
       (else (o> (sub1 n) (sub1 m))))))
 
 (check-true
   (o> 24 23))
 
+(check-false
+  (o> 3 3))
+
+(define o<
+  (lambda (n m)
+    (cond
+      ((zero? m) #f)
+      ((zero? n) #t)
+      (else (o< (sub1 n) (sub1 m))))))
+
+(check-true
+  (o< 2 4))
+
+(check-false
+  (o< 4 4))
+
+(define o=
+  (lambda (n m)
+    (cond
+      ((o> n m) #f)
+      ((o< n m) #f)
+      (else #t))))
+
+(check-false
+  (o= 3 4))
+
+(check-false
+  (o= 4 3))
+
+(check-true
+  (o= 25 25))
