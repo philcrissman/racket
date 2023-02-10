@@ -485,3 +485,14 @@
 (check-equal?
   (tup+ '(1 2 3 4 5) '(4 2))
   '(5 4 3 4 5))
+
+(define o>
+  (lambda (n m)
+    (cond
+      ((zero? m) #t)
+      ((zero? n) #f)
+      (else (o> (sub1 n) (sub1 m))))))
+
+(check-true
+  (o> 24 23))
+
