@@ -556,3 +556,16 @@
 (check-eq?
   (oq 100 30)
   3)
+
+; length already exists in racket, so i'll call this latlength
+(define latlength
+  (lambda (lat)
+    (cond
+      ((null? lat) 0)
+      (else (add1 (latlength (cdr lat)))))))
+
+
+(check-eq?
+  (latlength '(a b c d e f g))
+  7)
+
