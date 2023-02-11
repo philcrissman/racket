@@ -460,12 +460,12 @@
 (define ox
   (lambda (n m)
     (cond
-      ((zero? m) n)
+      ((zero? m) 0)
       (else (o+ n (ox n (sub1 m)))))))
 
 (check-eq?
   (ox 6 7)
-  48)
+  42)
 
 (define tup+
   (lambda (tup1 tup2)
@@ -486,6 +486,7 @@
   (tup+ '(1 2 3 4 5) '(4 2))
   '(5 4 3 4 5))
 
+; greater than op
 (define o>
   (lambda (n m)
     (cond
@@ -499,6 +500,7 @@
 (check-false
   (o> 3 3))
 
+; less than op
 (define o<
   (lambda (n m)
     (cond
@@ -512,6 +514,7 @@
 (check-false
   (o< 4 4))
 
+; o= is the = (equality, not assignment) operator
 (define o=
   (lambda (n m)
     (cond
@@ -527,3 +530,16 @@
 
 (check-true
   (o= 25 25))
+
+; oex is expt operator
+(define oex
+  (lambda (n m)
+    (cond
+      ((zero? m) 1)
+      (else (ox n (oex n (sub1 m)))))))
+
+(check-eq?
+  (oex 2 3)
+  8)
+
+
