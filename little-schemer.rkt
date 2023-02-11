@@ -569,3 +569,17 @@
   (latlength '(a b c d e f g))
   7)
 
+; (pick n lat) should return the nth element of lat
+(define pick
+  (lambda (n lat)
+    (cond
+      ((o= n 1) (car lat))
+      (else (pick (sub1 n) (cdr lat))))))
+
+(check-eq?
+  (pick 3 '(macaroni and cheese with bacon))
+  'cheese)
+
+(check-eq?
+  (pick 7 '(a b c d e f g h i j k l m n o p))
+  'g)
