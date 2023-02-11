@@ -583,3 +583,14 @@
 (check-eq?
   (pick 7 '(a b c d e f g h i j k l m n o p))
   'g)
+
+; (rempick n lat) _removes_ the nth element from lat and returns the lat wo that element
+(define rempick
+  (lambda (n lat)
+    (cond
+      ((o= n 1) (cdr lat))
+      (else (cons (car lat) (rempick (sub1 n) (cdr lat)))))))
+
+(check-equal?
+  (rempick 3 '(hotdogs with hot mustard))
+  '(hotdogs with mustard))
