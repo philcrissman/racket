@@ -542,4 +542,17 @@
   (oex 2 3)
   8)
 
+; oq is quotient, or integer division (no remainder)
+(define oq
+  (lambda (n m)
+    (cond
+      ((o< n m) 0)
+      (else (add1 (oq (o- n m) m))))))
 
+(check-eq?
+  (oq 4 2)
+  2)
+
+(check-eq?
+  (oq 100 30)
+  3)
