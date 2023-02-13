@@ -594,3 +594,24 @@
 (check-equal?
   (rempick 3 '(hotdogs with hot mustard))
   '(hotdogs with mustard))
+
+; (no-nums lat) takes a lat and returns it with no numbers in it, only non-numeric
+; atoms
+(define no-nums
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      ((number? (car lat)) (no-nums (cdr lat)))
+      (else (cons (car lat) (no-nums (cdr lat)))))))
+
+(check-equal?
+ (no-nums '(a 1 2 b c 3 d 4 e))
+ '(a b c d e))
+
+(check-equal?
+ (no-nums '(1 2 3 4))
+ '())
+
+(check-equal?
+ (no-nums '(a b c))
+ '(a b c))
