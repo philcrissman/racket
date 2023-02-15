@@ -584,11 +584,26 @@
   (pick 7 '(a b c d e f g h i j k l m n o p))
   'g)
 
+; one? is defined later, but the book would like us to 
+; use it in rempick... so pulling it up here
+(define one?
+  (lambda (n)
+      (o= 1 n)))
+
+(check-true
+  (one? 1))
+
+(check-false
+  (one? 0))
+
+(check-false
+  (one? 42))
+
 ; (rempick n lat) _removes_ the nth element from lat and returns the lat wo that element
 (define rempick
   (lambda (n lat)
     (cond
-      ((o= n 1) (cdr lat))
+      ((one? n) (cdr lat))
       (else (cons (car lat) (rempick (sub1 n) (cdr lat)))))))
 
 (check-equal?
@@ -676,15 +691,3 @@
   (occur 'hey '(hey ho lets go hey ho lets go))
   2)
 
-(define one?
-  (lambda (n)
-      (o= 1 n)))
-
-(check-true
-  (one? 1))
-
-(check-false
-  (one? 0))
-
-(check-false
-  (one? 42))
