@@ -635,3 +635,24 @@
   (all-nums '(a b c))
   '())
 
+(define eqan?
+  (lambda (a1 a2)
+    (cond
+      ((and (number? a1) (number? a2)) (o= a1 a2))
+      ((or (number? a1) (number? a2)) #f)
+      (else (eq? a1 a2)))))
+
+(check-true
+  (eqan? 1 1))
+
+(check-true
+  (eqan? 'a 'a))
+
+(check-false
+  (eqan? 'a 3))
+
+(check-false
+  (eqan? 2 4))
+
+(check-false
+  (eqan? 'a 'b))
