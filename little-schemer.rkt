@@ -615,3 +615,23 @@
 (check-equal?
  (no-nums '(a b c))
  '(a b c))
+
+(define all-nums
+  (lambda (lat)
+    (cond
+      ((null? lat) '())
+      ((number? (car lat)) (cons (car lat) (all-nums (cdr lat))))
+      (else (all-nums (cdr lat))))))
+
+(check-equal?
+  (all-nums '(a 1 2 b c 3 d 4 e))
+  '(1 2 3 4))
+
+(check-equal?
+  (all-nums '(1 2 3 4))
+  '(1 2 3 4))
+
+(check-equal?
+  (all-nums '(a b c))
+  '())
+
