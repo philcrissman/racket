@@ -656,3 +656,36 @@
 
 (check-false
   (eqan? 'a 'b))
+
+(define occur
+  (lambda (a lat)
+    (cond
+      ((null? lat) 0)
+      ((eq? (car lat) a) (add1 (occur a (cdr lat))))
+      (else (occur a (cdr lat))))))
+
+(check-eq?
+  (occur 'a '(a b c))
+  1)
+
+(check-eq?
+  (occur 'a '(b c d))
+  0)
+
+(check-eq?
+  (occur 'hey '(hey ho lets go hey ho lets go))
+  2)
+
+(define one?
+  (lambda (n)
+    (cond
+      (else (o= 1 n)))))
+
+(check-true
+  (one? 1))
+
+(check-false
+  (one? 0))
+
+(check-false
+  (one? 42))
