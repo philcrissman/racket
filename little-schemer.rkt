@@ -691,3 +691,24 @@
   (occur 'hey '(hey ho lets go hey ho lets go))
   2)
 
+
+; Chapter 4: *Oh My Gawd*: It's Full of Stars
+
+; rember* should remove members even from nested lists
+(define rember*
+  (lambda (a l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a) (rember* a (cdr l)))
+         (else (cons (car l) (rember* a (cdr l))))))
+      (else (cons (rember* a (car l)) (rember* a (cdr l)))))))
+
+(check-equal?
+  (rember* 'cup '((coffee) cup ((tea) cup) (and (hick)) cup))
+  '((coffee) ((tea)) (and (hick))))
+
+(check-equal?
+  (rember* 'sauce '(((tomato sauce)) ((bean) sauce) (and ((flying)) sauce)))
+  '(((tomato)) ((bean)) (and ((flying)))))
