@@ -678,8 +678,7 @@
 
 (define one?
   (lambda (n)
-    (cond
-      (else (o= 1 n)))))
+      (o= 1 n)))
 
 (check-true
   (one? 1))
