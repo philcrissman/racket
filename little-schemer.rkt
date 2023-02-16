@@ -731,3 +731,18 @@
  (insertR* 'roast 'chuck '((how much (wood)) could ((a (wood) chuck)) (((chuck))) (if (a) ((wood chuck))) could chuck wood))
  '((how much (wood)) could ((a (wood) chuck roast)) (((chuck roast))) (if (a) ((wood chuck roast))) could chuck roast wood))
 
+; inserts new to the Left of old, even if nested
+(define insertL*
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) old)
+          (cons new (cons (car l) (insertL* new old (cdr l)))))
+         (else (cons (car l) (insertL* new old (cdr l))))))
+      (else (cons (insertL* new old (car l)) (insertL* new old (cdr l)))))))
+
+(check-equal?
+ (insertL* 'ba 'da '(((da) bing) da ((boom))))
+ '(((ba da) bing) ba da ((boom))))
