@@ -746,3 +746,22 @@
 (check-equal?
  (insertL* 'ba 'da '(((da) bing) da ((boom))))
  '(((ba da) bing) ba da ((boom))))
+
+(define member*
+  (lambda (a l)
+    (cond
+      ((null? l) #f)
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a) #t)
+         (else (member* a (cdr l)))))
+      (else (or (member* a (car l)) (member* a (cdr l)))))))
+
+(check-true
+ (member* 'chips '((potato) (chips ((with) fish) (chips)))))
+
+(check-false
+ ; there's no i in team!
+ (member* 'i '((t) (e) (a) (m))))
+
+
