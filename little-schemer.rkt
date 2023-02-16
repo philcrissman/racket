@@ -764,4 +764,21 @@
  ; there's no i in team!
  (member* 'i '((t) (e) (a) (m))))
 
+(define leftmost
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l)) (car l))
+      (else (or (leftmost (car l)) (leftmost (cdr l)))))))
 
+(check-eq?
+ (leftmost '((potato) (chips ((with) fish) (chips))))
+ 'potato)
+
+(check-eq?
+ (leftmost '(((hot) (tuna (and)) cheese)))
+ 'hot)
+
+(check-eq?
+ (leftmost '(((())) ((( hi! ))) ()))
+ 'hi)
