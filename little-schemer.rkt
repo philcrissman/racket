@@ -767,7 +767,7 @@
 (define leftmost
   (lambda (l)
     (cond
-      ((null? l) '())
+      ((null? l) #f)
       ((atom? (car l)) (car l))
       (else (or (leftmost (car l)) (leftmost (cdr l)))))))
 
@@ -779,6 +779,33 @@
  (leftmost '(((hot) (tuna (and)) cheese)))
  'hot)
 
+; in the book, (leftmost '()) is said to be undefined, so they
+; do not recurse over the cdr. I thought it would be interesting to keep looking
+; for the leftmost _atom_ even if it's not in the first list-within-a-list,
+; that is, even if there is an empty list before more lists that may contain an atom.
+; So I wrote it to recurse over the car and the cdr. So this behavior is not exactly what
+; is described in the book.
 (check-eq?
  (leftmost '(((())) ((( hi! ))) ()))
- 'hi)
+ 'hi!)
+
+; write eqlist? using eqan?
+(define eqlist?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      ; this was confusing to me at first; but the first (and ...) is the question,
+      ; and the second (and ...) _is_ the return value; if it's true, eqlist? is true,
+      ; and vice versa
+      ((and (atom? (car l1)) (atom? (car l2)))
+       (and (eqan? (car l1) (car l2))
+            (eqlist? (cdr l1) (cdr l2))))
+      ((or (atom? (car l1)) (atom? (car l2))) #f)
+      (else (and (eqlist? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2)))))))
+
+(check-true
+ (eqlist? '(hello there) '(hello there)))
+
+(check-true
+ (eqlist? '((hello) () ((there) ())) '((hello) () ((there) ()))))
