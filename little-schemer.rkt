@@ -809,3 +809,20 @@
 
 (check-true
  (eqlist? '((hello) () ((there) ())) '((hello) () ((there) ()))))
+
+
+(define occur*
+  (lambda (a l)
+    (cond
+      ((null? l) 0)
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a) (+ 1 (occur* a (cdr l))))
+         (else (occur* a (cdr l)))))
+      (else (+ (occur* a (car l)) (occur* a (cdr l)))))))
+
+
+(check-eq?
+ (occur* 'chuck '((how) ((much wood would (a wood (chuck)) ((chuck)) if (a ((wood) chuck) (could (chuck)) wood)))))
+ 4)
+
