@@ -826,3 +826,16 @@
  (occur* 'chuck '((how) ((much wood would (a wood (chuck)) ((chuck)) if (a ((wood) chuck) (could (chuck)) wood)))))
  4)
 
+(define subst*
+  (lambda (new old l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) old) (cons new (subst* new old (cdr l))))
+         (else (cons (car l) (subst* new old (cdr l))))))
+      (else (cons (subst* new old (car l)) (subst* new old (cdr l)))))))
+
+(check-equal?
+ (subst* 'ho 'hey '((hey) ((hey) hey)))
+ '((ho) ((ho) ho)))
