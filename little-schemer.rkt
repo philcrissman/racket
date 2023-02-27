@@ -839,3 +839,18 @@
 (check-equal?
  (subst* 'ho 'hey '((hey) ((hey) hey)))
  '((ho) ((ho) ho)))
+
+; Chapter 6: Shadows
+
+; numbered checks if something is an arithmatic expression consisting only
+; of numbers and the +, x, and expt operators
+
+; in progress!
+(define numbered?
+  (lambda (aexp)
+    (cond
+      ((atom? aexp) (number? aexp))
+      ((eq? (car (cdr aexp) '(o+))) ... )
+      ((eq? (car (cdr aexp) '(ox))) ... )
+      ((eq? (car (cdr aexp) '(oex))) ... )
+      (else ... ))))
