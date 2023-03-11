@@ -850,7 +850,51 @@
   (lambda (aexp)
     (cond
       ((atom? aexp) (number? aexp))
-      ((eq? (car (cdr aexp) '(o+))) ... )
-      ((eq? (car (cdr aexp) '(ox))) ... )
-      ((eq? (car (cdr aexp) '(oex))) ... )
-      (else ... ))))
+      (else
+        (and (numbered? (car aexp))
+             (numbered? (car (cdr (cdr aexp)))))))))
+
+(check-true
+  (numbered? '(3 + 4)))
+
+(check-true
+  (numbered? '(5 x 5 + 5)))
+
+; value function
+; value is kind of a little arithmetic expression parser/interpreter
+; it reads an arithmetic expression and returns the value
+(define value
+  (lambda (nexp)
+    (cond
+      ((atom? nexp) nexp)
+      ((eq? (car (cdr nexp)) '+)
+       (o+ (value (car nexp))
+           (value (car (cdr (cdr nexp))))))
+      ((eq? (car (cdr nexp)) 'x)
+       (ox (value (car nexp))
+           (value (car (cdr (cdr nexp))))))
+      (else
+        (oex (value (car nexp))
+              (value (car (cdr (cdr nexp)))))))))
+
+(check-eq?
+  (value '(3 + 4))
+  7)
+
+(check-eq?
+  (value '(3 x 4))
+  12)
+
+(check-eq?
+  (value '(3 ^ 4))
+  81)
+
+(check-eq?
+  (value '(3 + (3 + 3)))
+  9)
+
+(check-eq?
+  (value '(3 x (3 + 3)))
+  18)
+
+
