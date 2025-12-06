@@ -360,7 +360,7 @@
   (lambda (a lat)
     (cond
       ((null? lat) '())
-      ((eq? (car lat) a) (multirember a (cdr lat)))
+      ((eq? (car lat) a) ( a (cdr lat)))
       (else (cons (car lat) (multirember a (cdr lat)))))))
 
 (check-equal?
