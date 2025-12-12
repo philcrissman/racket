@@ -610,3 +610,57 @@
  '())
 
 ; chapter 14: Let There Be Names
+
+; we are asked to remember the function `leftmost`
+; It should extract the leftmost atom from a list of S-expressions
+
+(define leftmost-a
+  (lambda (l)
+    (cond
+      ((atom? (car l)) (car l))
+       (else (leftmost-a (car l))))))
+
+(check-equal?
+ (leftmost-a '(((a) b) (c d)))
+ 'a)
+
+; leftmost as defined will fail with a list like:
+; (() (a b))
+; We need to keep looking in the cdr if the car has no atoms
+
+(define leftmost-b
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l)) (car l))
+      (else (cond
+              ((atom? (leftmost-b (car l)))
+               (leftmost-b (car l)))
+              (else (leftmost-b (cdr l))))))))
+
+; now it should work! let's try
+(check-equal?
+ (leftmost-b '(() (a b)))
+ 'a)
+
+; in leftmost-b we are repeating the expression (leftmost-b (car l)) ...
+; We can use let to only say this once
+(define leftmost-c
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l)) (car l))
+      (else
+       (let ((a (leftmost-c (car l))))
+         (cond
+           ((atom? a) a)
+           (else (leftmost-c (cdr l)))))))))
+
+; should still work, let's write a couple tests
+(check-equal?
+ (leftmost-c '((((a) b)) (c d)))
+ 'a)
+
+(check-equal?
+ (leftmost-c '((() a) (b d)))
+ 'a)
