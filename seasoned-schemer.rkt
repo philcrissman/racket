@@ -664,3 +664,137 @@
 (check-equal?
  (leftmost-c '((() a) (b d)))
  'a)
+
+; eqan? and eqlist? from the little schemer
+(define eqan?
+  (lambda (a1 a2)
+    (cond
+      ((and (number? a1) (number? a2)) (o= a1 a2))
+      ((or (number? a1) (number? a2)) #f)
+      (else (eq? a1 a2)))))
+
+(define eqlist?
+  (lambda (l1 l2)
+    (cond
+      ((and (null? l1) (null? l2)) #t)
+      ((or (null? l1) (null? l2)) #f)
+      ; this was confusing to me at first; but the first (and ...) is the question,
+      ; and the second (and ...) _is_ the return value; if it's true, eqlist? is true,
+      ; and vice versa
+      ((and (atom? (car l1)) (atom? (car l2)))
+       (and (eqan? (car l1) (car l2))
+            (eqlist? (cdr l1) (cdr l2))))
+      ((or (atom? (car l1)) (atom? (car l2))) #f)
+      (else (and (eqlist? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2)))))))
+
+; rember1*
+(define rember1*
+  (lambda (a l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((eq? (car l) a) (cdr l))
+         (else
+          (cons (car l)
+                (rember1* a (cdr l))))))
+      (else
+       (cond
+         ((eqlist?
+           (rember1* a (car l))
+           (car l))
+          (cons (car l)
+                (rember1* a (cdr l))))
+         (else (cons (rember1* a (car l))
+                     (cdr l))))))))
+
+(check-equal?
+ (rember1*
+  'salad
+  '((Swedish rye)
+    (French (mustard salad turkey))
+    salad))
+ '((Swedish rye)
+   (French (mustard turkey))
+   salad))
+
+; a new rember1*, with letrec:
+(define rember1*-lr
+  (lambda (a l)
+    (letrec
+    ((R (lambda (l)
+          (cond
+            ((null? l) '())
+            ((atom? (car l))
+             (cond
+               ((eq? (car l) a) (cdr l))
+               (else (cons (car l) (R (cdr l))))))
+            (else
+             (cond
+               ((eqlist?
+                 (R (car l))
+                 (car l))
+                (cons (car l) (R (cdr l))))
+               (else
+                (cons (R (car l)) (cdr l)))))))))
+      (R l))))
+
+(check-equal?
+ (rember1*-lr
+  'salad
+  '((Swedish rye)
+    (French (mustard salad turkey))
+    salad))
+ '((Swedish rye)
+   (French (mustard turkey))
+   salad))
+  
+; now we'll use let to stop repeating `(R (cdr l))`
+(define rember1*-lrl
+  (lambda (a l)
+    (letrec
+    ((R (lambda (l)
+          (cond
+            ((null? l) '())
+            ((atom? (car l))
+             (cond
+               ((eq? (car l) a) (cdr l))
+               (else (cons (car l) (R (cdr l))))))
+            (else
+             (let ((av (R (car l))))
+               (cond
+                 ((eqlist? (car l) av)
+                  (cons (car l) (R (cdr l))))
+                 (else
+                  (cons av (cdr l))))))))))
+      (R l))))
+
+(check-equal?
+ (rember1*-lrl
+  'salad
+  '((Swedish rye)
+    (French (mustard salad turkey))
+    salad))
+ '((Swedish rye)
+   (French (mustard turkey))
+   salad))
+
+; now we're doing depth*
+(define depth*
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      ((atom? (car l))
+       (depth* (cdr l)))
+      (else
+       (cond
+         ((> (depth* (cdr l))
+             (add1 (depth* (car l))))
+          (depth* (cdr l)))
+         (else
+          (add1 (depth* (car l)))))))))
+
+(check-equal?
+ (depth* '((pickled) peppers (peppers pickled)))
+ 2)
+
