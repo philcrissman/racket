@@ -780,6 +780,7 @@
    salad))
 
 ; now we're doing depth*
+; depth* looks at the depth of a tree as encoded by a list
 (define depth*
   (lambda (l)
     (cond
@@ -798,3 +799,275 @@
  (depth* '((pickled) peppers (peppers pickled)))
  2)
 
+(check-equal?
+ (depth* '(c (b (a b) a) a))
+ 3)
+
+; this is the first attempt, in the book, to remove the redundant calls in
+; depth* by using `let` ...
+(define depth*let1
+  (lambda (l)
+    (let ((a (add1 (depth*let1 (car l))))
+          (d (depth*let1 (cdr l))))
+      (cond
+        ((null? l) 1)
+        ((atom? (car l)) d)
+        (else (cond
+                ((> d a) d)
+                (else a)))))))
+
+; the above won't actually work -- we are trying to `let`
+; a and d be certain values, but we're trying to do this without
+; being able to calculate a value yet (even on recursion,
+; we try to let before we get into our cond and at least return
+; a 1 ...
+
+; This is how we would check depth*let1 ... if we uncomment it,
+; we'll get an error.
+;(check-equal?
+; (depth*let1 '(c (b (a b) a) a))
+; 3)
+
+; here's how they put it in the book:
+; "
+; A (let ...) first determines the values of the named expressions.
+; Then it associates a name with each value and determines the value
+; of the expression in the value part. Since the value of the named
+; expression in our example depends on the value of (car l) before
+; we know whether or not l is empty, this depth* is incorrect.
+; "
+
+; Here's the next depth*
+(define depth*let2
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      ((atom? (car l))
+       (depth*let2 (cdr l)))
+      (else
+       (let ((a (add1 (depth*let2 (car l))))
+             (d (depth*let2 (cdr l))))
+         (cond
+           ((> d a) d)
+           (else a)))))))
+
+; this should work
+(check-equal?
+ (depth*let2 '(c (b (a b) a) a))
+ 3)
+
+; an alernate way to do this:
+(define depth*let3
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      (else
+       (let ((d (depth*let3 (cdr l))))
+         (cond
+           ((atom? (car l)) d)
+           (else
+            (let ((a (add1 (depth* (car l)))))
+              (cond
+                ((> d a) d)
+                (else a))))))))))
+
+; this also works:
+(check-equal?
+ (depth*let3 '(c (b (a b) a) a))
+ 3)
+
+; ... but our authors point out that it is a little more complex
+; to read and understand--it has 3 conds instead of only 2, and
+; further nesting. They prefer the version before, named here as
+; depth*let2 (the book names them all depth*, but I'm renaming them
+; so the functions can all be defined.
+
+; YET ANOTHER depth*, this time a little simpler, using `if`
+(define depth*let4
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      ((atom? (car l))
+       (depth*let4 (cdr l)))
+      (else
+       (let ((a (add1 (depth*let4 (car l))))
+             (d (depth*let4 (cdr l))))
+         (if (> d a) d a))))))
+
+(check-equal?
+ (depth*let4 '(c (b (a b) a) a))
+ 3)
+
+; yet another version; now using max, which lets us not even need let:
+(define depth*5
+  (lambda (l)
+    (cond
+      ((null? l) 1)
+      ((atom? (car l))
+       (depth*5 (cdr l)))
+      (else
+       (max
+        (add1 (depth*5 (car l)))
+        (depth*5 (cdr l)))))))
+
+(check-equal?
+ (depth*5 '(c (b (a b) a) a))
+ 3)
+
+; scramble, again!
+(define scramble-c
+  (lambda (tup)
+    (letrec
+        ((P (lambda (tup rp)
+              (cond
+                ((null? tup) '())
+                (else
+                 (let ((rp (cons (car tup) rp)))
+                   (cons (pick (car tup) rp)
+                         (P (cdr tup) rp))))))))
+      (P tup '()))))
+
+(check-equal? (scramble-c '(1 2 3 4)) '(1 1 1 1))
+
+
+; leftmost revisited
+(define lm
+  (lambda (l out)
+    (cond
+      ((null? l) '())
+      ((atom? (car l)) (out (car l)))
+      (else (let ()
+              (lm (car l) out)
+              (lm (cdr l) out))))))
+
+(define leftmost-d
+  (lambda (l)
+    (let/cc skip
+           (lm l skip))))
+
+(check-equal? (leftmost-d '(((a)) b (c))) 'a)
+
+; now to hide lm in leftmost
+(define leftmost-e
+  (letrec
+      ((lm (lambda (l out)
+            (cond
+              ((null? l) '())
+              ((atom? (car l)) (out (car l)))
+              (else (let ()
+                      (lm (car l) out)
+                      (lm (cdr l) out)))))))
+    (lambda (l)
+      (let/cc skip
+        (lm l skip)))))
+
+; another way:
+(define leftmost-f
+  (lambda (l)
+    (letrec
+      ((lm (lambda (l out)
+            (cond
+              ((null? l) '())
+              ((atom? (car l)) (out (car l)))
+              (else (let ()
+                      (lm (car l) out)
+                      (lm (cdr l) out)))))))
+    (let/cc skip
+      (lm l skip)))))
+
+; and another:
+(define leftmost-g
+  (lambda (l)
+    (let/cc skip
+      (letrec
+          ((lm (lambda (l out)
+                (cond
+                  ((null? l) '())
+                  ((atom? (car l)) (out (car l)))
+                  (else (let ()
+                          (lm (car l) out)
+                          (lm (cdr l) out)))))))
+        (lm l skip)))))
+          
+(check-equal?
+ (leftmost-g '(((a)) b (c)))
+ 'a)
+
+; and another
+; this one eliminates `out`, since it's always skip
+; and uses begin instead of let ()
+(define leftmost-h
+  (lambda (l)
+    (let/cc skip
+      (letrec
+          ((lm (lambda (l)
+                (cond
+                  ((null? l) '())
+                  ((atom? (car l)) (skip (car l)))
+                  (else (begin
+                          (lm (car l))
+                          (lm (cdr l))))))))
+        (lm l)))))
+
+(check-equal?
+ (leftmost-h '(((a)) b (c)))
+ 'a)
+
+
+; rember* revisited
+
+(define-syntax try
+  (syntax-rules ()
+    ((try x a b)
+     (let/cc success
+       (let/cc x
+         (success a))
+       b))))
+
+(define rm
+  (lambda (a l oh)
+    (cond
+      ((null? l) (oh 'no))
+      ((atom? (car l))
+              (if (eq? (car l) a)
+                  (cdr l)
+                  (cons (car l)
+                        (rm a (cdr l) oh))))
+      (else
+       (try oh2
+            (cons (rm a (car l) oh2)
+                  (cdr l))
+            (cons (car l)
+                  (rm a (cdr l) oh)))))))
+
+(define rember*r
+  (lambda (a l)
+    (try oh (rm a l oh) l)))
+
+(check-equal?
+ (rember*r 'a '((b a) c a))
+ '((b) c a))
+
+; let's try to hide rm in rember*
+(define rember*rm
+  (lambda (a l)
+    (letrec
+        ((rm (lambda (a l oh)
+               (cond
+                 ((null? l) (oh 'no))
+                 ((atom? (car l))
+                  (if (eq? (car l) a)
+                      (cdr l)
+                      (cons (car l)
+                            (rm a (cdr l) oh))))
+                 (else
+                  (try oh2
+                       (cons (rm a (car l) oh2)
+                             (cdr l))
+                       (cons (car l)
+                             (rm a (cdr l) oh))))))))
+      (try oh (rm a l oh) l))))
+
+(check-equal?
+ (rember*rm 'c '((a b) ((c) d) (e (f g))))
+ '((a b) (() d) (e (f g))))
