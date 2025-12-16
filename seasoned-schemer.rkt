@@ -1071,3 +1071,201 @@
 (check-equal?
  (rember*rm 'c '((a b) ((c) d) (e (f g))))
  '((a b) (() d) (e (f g))))
+
+; Chapter 15
+; The difference between men and boys
+
+; What is this?
+(define x
+  (cons 'chicago
+        (cons 'pizza
+              '())))
+
+; well
+(check-equal?
+ x
+ '(chicago pizza))
+
+; We're talking about define as creating values
+; looks like `set!` redefines an existing binding... it doesn't appear to
+; work if you give it a new (unbound) variable name.
+(set! x 'gone)
+(define y 'gone)
+
+(check-equal? x y)
+
+(define gourmand
+  (lambda (food)
+    (set! x food)
+    (cons food
+          (cons x '()))))
+
+(check-equal?
+ (gourmand 'potato)
+ '(potato potato))
+
+; set! has side-effects
+; x is now equal to potato, because we called (gourmand 'potato)
+(check-equal? x 'potato)
+
+; I wonder where they're going with this?
+
+(define omnivore
+  (let ((x 'minestrone))
+    (lambda (food)
+      (set! x food)
+      (cons food (cons x '())))))
+
+(check-equal?
+ (omnivore 'onion)
+ '(onion onion))
+
+; x _should_ still be potato, I think?
+(check-equal? x 'potato)
+
+; this happened because we have x in a let in omnivore, and that
+; is the x that was changed (minestrone is gone)
+
+; The Sixteenth Commandment:
+; Use (set! ...) only with names defined in (let ...)s
+
+; define doesn't have the same problem as set! ... does it?
+(define foodstuff
+  (lambda (food)
+    (define x food)
+    (cons food (cons x '()))))
+
+(check-equal? (foodstuff 'soup) '(soup soup))
+(check-equal? x 'potato)
+; so, yes... it looks like just using define in a function avoid the
+; side-effects that set! has
+
+; let me try something; i don't even know if this works
+(define remember-dave
+  (let ((x 'Alice))
+    (lambda (name)
+      (set! x (if (eq? x 'Dave) 'Dave name))
+      (cons 'Hello (cons x '())))))
+
+(check-equal? (remember-dave 'Alice) '(Hello Alice))
+(check-equal? (remember-dave 'Dave) '(Hello Dave))
+(check-equal? (remember-dave 'Bob) '(Hello Dave))
+(check-equal? (remember-dave 'Alice) '(Hello Dave))
+
+; Interesting: it _did_ work. I'm actually a little surprised, I thought
+; maybe the let would "reset" x to 'Alice every time.
+; so let, in this case, must be doing something a little bit like
+; the ||= operator in Ruby (and other languages): it's letting x be 'Alice
+; _only_ if x doesn't already have a value. I guess this scope just
+; continues to live inside the function?
+
+; what if we tried to remember everyone?
+(define remember-everyone
+  (let ((x '()))
+    (lambda (name)
+      (set! x (cons name x))
+      (cons 'Hello x))))
+
+(check-equal? (remember-everyone 'Alice) '(Hello Alice))
+(check-equal? (remember-everyone 'Bob) '(Hello Bob Alice))
+(check-equal? (remember-everyone 'Carol) '(Hello Carol Bob Alice))
+(check-equal? (remember-everyone 'Dave) '(Hello Dave Carol Bob Alice))
+
+; that's kind of neat.
+; the old x, the one in the outermost scope, is still potato
+; (unless someone reset it in the repl, but, we can't tell that)
+(check-equal? x 'potato)
+
+; The Eighteenth Commandment
+; Use (set! x ...) only when the value of x is no longer needed
+; (It looks like they skipped seventeen in the commandments?)
+
+(define food 'onion)
+
+; chez-nous is suppose to swap the values of x and food
+(define chez-nous
+  (lambda ()
+    (let ((a food))
+      (set! food x)
+      (set! x a))))
+
+(chez-nous)
+(check-equal? x 'onion)
+(check-equal? food 'potato)
+
+; Interesting... it does work.
+; So let creates a sort of memory (closure?) inside of a function.
+; But it's only remembering whatever it's `let`ing, in this case `a`...
+; x and food still refer to the outermost bindings of x and food.
+
+(define sweet-tooth
+  (lambda (food)
+    (cons food (cons 'cake '()))))
+
+(define last 'angelfood)
+
+; sweet-toothL should behave the same as sweet-tooth, but it resets last each time
+(define sweet-toothL
+  (lambda (food)
+    (set! last food)
+    (cons food (cons 'cake '()))))
+
+(check-equal? (sweet-tooth 'chocolate) '(chocolate cake))
+(check-equal? last 'angelfood)
+(check-equal? (sweet-toothL 'chocolate) '(chocolate cake))
+(check-equal? last 'chocolate)
+(check-equal? (sweet-toothL 'carrot) '(carrot cake))
+(check-equal? last 'carrot)
+; this all works as expected. Except we deliberately disregarded the 16th commandment,
+; because this is the behavior we wanted.
+
+; deep
+(define deep
+  (lambda (m)
+    (cond
+      ((zero? m) 'pizza)
+      (else
+       (cons (deep (sub1 m)) '())))))
+
+(check-equal?
+ (deep 0)
+ 'pizza)
+
+(check-equal?
+ (deep 5)
+ '(((((pizza))))))
+
+; digression:
+; define upto n (iota n)
+(define iota
+  (lambda (n)
+    (cond
+      ((zero? n) '(0))
+      (else
+       (append (iota (sub1 n)) (cons n '()))))))
+; using append feels like cheating, here.
+; could use letrec
+(define iota2
+  (lambda (n)
+    (letrec
+        ((IO
+          (lambda (a b)
+            (cond
+              ((eq? a b) (cons b '()))
+              (else
+               (cons a (IO (add1 a) b)))))))
+      (IO 0 n))))
+; I guess we could have also been explicit from the beginning,
+; and just said that iota or upto _always_ needs 2 args,
+; a first and last.
+(define upto
+  (lambda (a b)
+    (cond
+      ((eq? a b) (cons b '()))
+      (else
+       (cons a (upto (add1 a) b))))))
+; digression done
+
+
+                 
+
